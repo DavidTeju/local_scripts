@@ -20,7 +20,9 @@ beeper \
 maccy \
 bitwarden \
 spotify \
-notion
+notion \
+bitwarden \
+claude
 
 # Symlink dotfiles
 ln -sf ~/scripts/zprofile.zsh ~/.zprofile
