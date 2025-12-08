@@ -1,0 +1,10 @@
+[user]
+	name = David Tejuosho
+	email = tejuoshodavid@gmail.com
+[core]
+	excludesfile = ~/.gitignore_global
+	editor = code --wait
+[init]
+	defaultBranch = main
+[pull]
+	rebase = true
