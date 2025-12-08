@@ -23,7 +23,13 @@ spotify \
 notion \
 bitwarden \
 claude \
-dropbox
+dropbox \
+zoom \
+slack \
+microsoft-teams \
+
+brew install --cask \
+onedrive
 
 # Symlink dotfiles
 ln -sf ~/scripts/zprofile.zsh ~/.zprofile
