@@ -22,7 +22,8 @@ bitwarden \
 spotify \
 notion \
 bitwarden \
-claude
+claude \
+dropbox
 
 # Symlink dotfiles
 ln -sf ~/scripts/zprofile.zsh ~/.zprofile

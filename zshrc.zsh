@@ -1,6 +1,6 @@
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="eastwood"
-plugins=(git)
+plugins=(git safe-paste)
 
 source $ZSH/oh-my-zsh.sh
 
