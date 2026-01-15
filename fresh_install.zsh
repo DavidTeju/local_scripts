@@ -37,5 +37,5 @@ onedrive
 ln -sf ~/scripts/zprofile.zsh ~/.zprofile
 ln -sf ~/scripts/zshrc.zsh ~/.zshrc
 ln -sf ~/scripts/gitconfig ~/.gitconfig
-ln -sf ~/scripts/gitignore_global.zsh ~/.gitignore_global
+ln -sf ~/scripts/gitignore_global ~/.gitignore_global
 ln -sf ~/scripts/.ssh ~/.ssh
