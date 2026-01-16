@@ -28,7 +28,8 @@ zoom \
 slack \
 microsoft-teams \
 vlc \
-claude-code
+claude-code \
+jetbrains-toolbox
 
 brew install --cask \
 onedrive
