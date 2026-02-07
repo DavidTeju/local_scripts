@@ -1,3 +1,6 @@
+# Resolve the directory this script lives in, so it works regardless of where the repo is cloned
+SCRIPT_DIR="${0:A:h}"
+
 # Install Homebrew
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 eval "$(/opt/homebrew/bin/brew shellenv)"
@@ -35,11 +38,11 @@ onedrive \
 iterm2
 
 # Symlink dotfiles
-ln -sf ~/scripts/zprofile.zsh ~/.zprofile
-ln -sf ~/scripts/zshrc.zsh ~/.zshrc
-ln -sf ~/scripts/gitconfig ~/.gitconfig
-ln -sf ~/scripts/gitignore_global ~/.gitignore_global
-ln -sf ~/scripts/.ssh ~/.ssh
+ln -sf "$SCRIPT_DIR/zprofile.zsh" ~/.zprofile
+ln -sf "$SCRIPT_DIR/zshrc.zsh" ~/.zshrc
+ln -sf "$SCRIPT_DIR/gitconfig" ~/.gitconfig
+ln -sf "$SCRIPT_DIR/gitignore_global" ~/.gitignore_global
+ln -sf "$SCRIPT_DIR/.ssh" ~/.ssh
 
 # iTerm2 setup
 curl -L https://iterm2.com/shell_integration/zsh -o ~/.iterm2_shell_integration.zsh

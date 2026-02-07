@@ -1,7 +1,10 @@
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
-if [ -f ~/scripts/aliases.zsh ]; then
-    . ~/scripts/aliases.zsh
+# Resolve the repo directory by following the symlink from ~/.zprofile back to the real file
+DOTFILES_DIR="${0:A:h}"
+
+if [ -f "$DOTFILES_DIR/aliases.zsh" ]; then
+    . "$DOTFILES_DIR/aliases.zsh"
 fi
 
 # Added by OrbStack: command-line tools and integration
