@@ -45,3 +45,12 @@ alias cls='clear'
 
 # Reload shell
 alias reload='source ~/.zprofile && source ~/.zshrc'
+
+# Projects
+alias assistant='cd ~/projects/personal_assistant_claude && claude'
+
+# Python
+alias python='python3'
+
+# Deploy
+alias deploy-handwriting="ssh root@betterletters.app 'cd /root/handwriting-teacher && git pull && docker build -t handwriting-teacher . && docker stop handwriting-teacher && docker rm handwriting-teacher && docker run -d --name handwriting-teacher --restart unless-stopped -p 127.0.0.1:5123:5123 --env-file /root/handwriting-teacher/.env handwriting-teacher'"

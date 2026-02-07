@@ -21,7 +21,6 @@ maccy \
 bitwarden \
 spotify \
 notion \
-bitwarden \
 claude \
 dropbox \
 zoom \
@@ -32,7 +31,8 @@ claude-code \
 jetbrains-toolbox
 
 brew install --cask \
-onedrive
+onedrive \
+iterm2
 
 # Symlink dotfiles
 ln -sf ~/scripts/zprofile.zsh ~/.zprofile
@@ -40,3 +40,13 @@ ln -sf ~/scripts/zshrc.zsh ~/.zshrc
 ln -sf ~/scripts/gitconfig ~/.gitconfig
 ln -sf ~/scripts/gitignore_global ~/.gitignore_global
 ln -sf ~/scripts/.ssh ~/.ssh
+
+# iTerm2 setup
+curl -L https://iterm2.com/shell_integration/zsh -o ~/.iterm2_shell_integration.zsh
+mkdir -p ~/bin
+curl -L https://iterm2.com/utilities/imgcat -o ~/bin/imgcat && chmod +x ~/bin/imgcat
+curl -L https://iterm2.com/utilities/it2copy -o ~/bin/it2copy && chmod +x ~/bin/it2copy
+
+# iTerm2 preferences
+defaults write com.googlecode.iterm2 "OptionKey" -int 1
+defaults write com.googlecode.iterm2 "Unlimited Scrollback" -bool true
