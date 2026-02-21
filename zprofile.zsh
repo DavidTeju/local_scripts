@@ -1,7 +1,9 @@
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # Resolve the repo directory by following the symlink from ~/.zprofile back to the real file
-DOTFILES_DIR="${0:A:h}"
+# NOTE: ${0:A:h} doesn't work here because zsh sets $0 to the shell name (not the file path)
+# when auto-loading .zprofile at login. Use readlink on the known symlink instead.
+DOTFILES_DIR="$(dirname "$(readlink ~/.zprofile)")"
 
 if [ -f "$DOTFILES_DIR/aliases.zsh" ]; then
     . "$DOTFILES_DIR/aliases.zsh"
