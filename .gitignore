@@ -1,3 +1,4 @@
 known_hosts*
 .ssh/id_*
 github_deploy*
+.env
