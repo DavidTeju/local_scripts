@@ -5,6 +5,7 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 # when auto-loading .zprofile at login. Use readlink on the known symlink instead.
 DOTFILES_DIR="$(dirname "$(readlink ~/.zprofile)")"
 
+# All shell aliases live here — edit this file to add/modify aliases
 if [ -f "$DOTFILES_DIR/aliases.zsh" ]; then
     . "$DOTFILES_DIR/aliases.zsh"
 fi
@@ -12,3 +13,5 @@ fi
 # Added by OrbStack: command-line tools and integration
 # This won't be added again if you remove it.
 source ~/.orbstack/shell/init.zsh 2>/dev/null || :
+
+cowsay -r -C "Hello Femi :)"
