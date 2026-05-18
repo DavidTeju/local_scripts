@@ -1,3 +1,5 @@
+# Shared aliases — sourced from zshrc.zsh, mac/zprofile.zsh, and linux/bashrc.sh.
+
 # Navigation
 alias ..='cd ..'
 alias ...='cd ../..'
@@ -5,11 +7,11 @@ alias ....='cd ../../..'
 alias ~="cd ~"
 alias -- -='cd -'
 
-# Detect which `ls` flavor is in use
+# Detect which `ls` flavor is in use (BSD vs GNU)
 if ls --color > /dev/null 2>&1; then # GNU `ls`
-	colorflag="--color"
+    colorflag="--color"
 else # macOS `ls`
-	colorflag="-G"
+    colorflag="-G"
 fi
 
 alias ls="ls ${colorflag}"
@@ -43,8 +45,19 @@ alias h='history'
 # Clear
 alias cls='clear'
 
-# Reload shell
-alias reload='source ~/.zprofile && source ~/.zshrc'
+# Reload shell — picks the right files based on which shell we're in
+if [ -n "$ZSH_VERSION" ]; then
+    alias reload='source ~/.zprofile && source ~/.zshrc'
+else
+    alias reload='source ~/.bashrc'
+fi
+
+# apt shortcuts (Linux-only; inert on mac)
+if command -v apt-get >/dev/null 2>&1; then
+    alias agi='sudo apt-get install -y'
+    alias agu='sudo apt-get update && sudo apt-get upgrade -y'
+    alias ags='apt-cache search'
+fi
 
 # Projects
 alias assistant='cd ~/projects/personal_assistant_claude && claude'

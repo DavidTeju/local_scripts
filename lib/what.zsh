@@ -1,19 +1,7 @@
-export ZSH="$HOME/.oh-my-zsh"
-ZSH_THEME="eastwood"
-plugins=(git safe-paste)
+# Unified command inspector (alias, function, builtin, external).
+# zsh implementation — uses associative arrays and word-splitting flags.
+# A simpler bash port lives at ../lib/what.sh.
 
-source $ZSH/oh-my-zsh.sh
-
-source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-
-autoload -Uz compinit
-compinit
-
-# iTerm2 shell integration
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
-
-# what - unified command inspector (alias, function, builtin, external)
 what() {
   [[ -z "$1" ]] && { echo "Usage: what <command> [<command>...]"; return 1 }
 
@@ -40,7 +28,8 @@ what() {
     if (( ${+functions[$cmd]} )); then
       found=1
       printf '\e[33m▸ function\e[0m\n'
-      local body="$(which "$cmd")" lines="$(which "$cmd" | wc -l)"
+      local body="$(which "$cmd")"
+      local lines=${#${(f)body}}
       if (( lines > 30 )); then
         echo "$body" | head -30
         printf '  \e[2m... truncated (%d lines total)\e[0m\n' "$lines"
@@ -50,14 +39,12 @@ what() {
       _what_srcgrep "(function[[:space:]]+${cmd}[[:space:{]|${cmd}[[:space:]]*\(\))"
     fi
 
-    # Builtin
-    if [[ "$(whence -w "$cmd" 2>/dev/null)" == *": builtin" ]]; then
+    local wtype="$(whence -w "$cmd" 2>/dev/null)"
+    if [[ "$wtype" == *": builtin" ]]; then
       found=1
       printf '\e[35m▸ builtin\e[0m  %s\n' "$cmd"
     fi
-
-    # Reserved word
-    if [[ "$(whence -w "$cmd" 2>/dev/null)" == *": reserved" ]]; then
+    if [[ "$wtype" == *": reserved" ]]; then
       found=1
       printf '\e[31m▸ reserved word\e[0m  %s\n' "$cmd"
     fi
@@ -130,9 +117,3 @@ _what_srcgrep() {
     fi
   done
 }
-
-
-# Aliases are defined in ~/scripts/aliases.zsh (sourced via ~/.zprofile)
-
-# Load secrets from ~/scripts/.env (gitignored)
-[ -f ~/scripts/.env ] && export $(grep -v '^#' ~/scripts/.env | xargs)
