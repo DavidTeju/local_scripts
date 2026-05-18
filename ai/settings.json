@@ -1,0 +1,72 @@
+{
+    "env": {
+        "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+    },
+    "permissions": {
+        "allow": [
+            "Bash(code:*)",
+            "Bash(npx svelte-check:*)"
+        ],
+        "defaultMode": "auto"
+    },
+    "model": "opus[1m]",
+    "hooks": {
+        "PreToolUse": [
+            {
+                "matcher": "",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "~/.claude/hooks/readonly-gate.sh"
+                    }
+                ]
+            },
+            {
+                "matcher": "Edit|Write|Bash|NotebookEdit|mcp__plugin_serena_serena__(?:replace_content|replace_symbol_body|insert_after_symbol|insert_before_symbol|create_text_file)",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "~/.claude/hooks/eslint-disable-blocker.sh"
+                    }
+                ]
+            },
+            {
+                "matcher": "Edit|Write|NotebookEdit",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "~/.claude/hooks/eslint-config-protector.sh"
+                    }
+                ]
+            }
+        ],
+        "PostToolUse": [
+            {
+                "matcher": "",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "~/.claude/hooks/lint-feedback-loop.sh"
+                    }
+                ]
+            }
+        ]
+    },
+    "statusLine": {
+        "type": "command",
+        "command": "~/.claude/statusline-command.sh"
+    },
+    "enabledPlugins": {
+        "typescript-lsp@claude-plugins-official": true,
+        "code-simplifier@claude-plugins-official": true,
+        "serena@claude-plugins-official": true,
+        "frontend-design@claude-plugins-official": true,
+        "pyright-lsp@claude-plugins-official": true,
+        "swift-lsp@claude-plugins-official": true
+    },
+    "effortLevel": "high",
+    "skipDangerousModePermissionPrompt": true,
+    "teammateMode": "tmux",
+    "skipAutoPermissionPrompt": true,
+    "autoCompactEnabled": false
+}
