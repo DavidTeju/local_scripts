@@ -1,4 +1,10 @@
 known_hosts*
 .ssh/id_*
+.ssh/*.pem
 github_deploy*
 .env
+
+# Configs with embedded secrets
+so_config.yml
+xrc
+todoist_config.json
