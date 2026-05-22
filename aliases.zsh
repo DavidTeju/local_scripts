@@ -5,17 +5,18 @@ alias ....='cd ../../..'
 alias ~="cd ~"
 alias -- -='cd -'
 
-# Detect which `ls` flavor is in use
-if ls --color > /dev/null 2>&1; then # GNU `ls`
+# Detect which `ls` flavor is in use. Use `--version` because BSD ls silently
+# accepts `--color` (returns 0) but breaks symlink-following when given.
+if command ls --version > /dev/null 2>&1; then # GNU `ls`
 	colorflag="--color"
-else # macOS `ls`
+else # macOS BSD `ls`
 	colorflag="-G"
 fi
 
-alias ls="ls ${colorflag}"
-alias ll='ls -alF'
-alias la='ls -A'
-alias l='ls -CF'
+alias ls="command ls ${colorflag}"
+alias ll='ls -alFH'
+alias la='ls -AH'
+alias l='ls -CFH'
 
 # File Operations (Safety)
 alias cp='cp -i'

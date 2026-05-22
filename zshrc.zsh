@@ -132,7 +132,9 @@ _what_srcgrep() {
 }
 
 
-# Aliases are defined in ~/scripts/aliases.zsh (sourced via ~/.zprofile)
+# Aliases — sourced AFTER oh-my-zsh so its lib/directories.zsh can't clobber ll/l/la
+DOTFILES_DIR="$(dirname "$(readlink ~/.zshrc)")"
+[ -f "$DOTFILES_DIR/aliases.zsh" ] && . "$DOTFILES_DIR/aliases.zsh"
 
 # Load secrets from ~/scripts/.env (gitignored)
 [ -f ~/scripts/.env ] && export $(grep -v '^#' ~/scripts/.env | xargs)
