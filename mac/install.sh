@@ -79,6 +79,9 @@ fi
 # iTerm2 setup
 curl -L https://iterm2.com/shell_integration/zsh -o ~/.iterm2_shell_integration.zsh
 mkdir -p ~/bin
+# macOS markdown opener used by Open With / app bundle wrappers.
+ln -sfn "$REPO_DIR/obsidian-opener.sh" "$HOME/bin/obsidian-opener"
+
 curl -L https://iterm2.com/utilities/imgcat -o ~/bin/imgcat && chmod +x ~/bin/imgcat
 curl -L https://iterm2.com/utilities/it2copy -o ~/bin/it2copy && chmod +x ~/bin/it2copy
 

@@ -1,4 +1,5 @@
-# Shared aliases — sourced from zshrc.zsh, mac/zprofile.zsh, and linux/bashrc.sh.
+# Shared aliases — sourced from lib/zshrc.zsh after oh-my-zsh, plus
+# linux/bashrc.sh for bash sessions.
 
 # Navigation
 alias ..='cd ..'

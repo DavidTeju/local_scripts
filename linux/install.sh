@@ -153,6 +153,18 @@ chmod 700 "$HOME/.ssh"
 ln -sfn "$SCRIPT_DIR/.ssh/config" "$HOME/.ssh/config"
 chmod 600 "$SCRIPT_DIR/.ssh/config" 2>/dev/null || true
 
+# Symlink cross-platform app configs.
+mkdir -p "$HOME/.config/gh" "$HOME/.config/Code/User"
+ln -sfn "$REPO_DIR/gh/config.yml" "$HOME/.config/gh/config.yml"
+ln -sfn "$REPO_DIR/gh/hosts.yml" "$HOME/.config/gh/hosts.yml"
+ln -sfn "$REPO_DIR/vscode/settings.json" "$HOME/.config/Code/User/settings.json"
+ln -sfn "$REPO_DIR/vscode/keybindings.json" "$HOME/.config/Code/User/keybindings.json"
+if command -v code >/dev/null 2>&1; then
+    xargs -n1 code --install-extension < "$REPO_DIR/vscode/extensions.txt"
+else
+    echo "==> VS Code CLI not found; skipping extension install"
+fi
+
 # Wire bashrc.sh into ~/.bashrc (idempotent)
 if [ -f "$HOME/.bashrc" ] && ! grep -q "bashrc.local" "$HOME/.bashrc"; then
     {
