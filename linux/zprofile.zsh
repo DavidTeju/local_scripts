@@ -1,13 +1,3 @@
-# Resolve <repo> from the ~/.zprofile symlink target.
-# readlink -f gives an absolute, fully-resolved path on Linux (GNU coreutils).
-DOTFILES_DIR="$(dirname "$(readlink -f ~/.zprofile)")"
-REPO_DIR="$(dirname "$DOTFILES_DIR")"
-
-# Shared aliases
-if [ -f "$REPO_DIR/lib/aliases.sh" ]; then
-    . "$REPO_DIR/lib/aliases.sh"
-fi
-
 # User-local bin dirs on PATH
 case ":$PATH:" in
     *":$HOME/.local/bin:"*) ;;

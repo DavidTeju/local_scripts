@@ -20,14 +20,19 @@ fi
 FORMULAE=(
     git python node tree jq
     zsh-syntax-highlighting zsh-autosuggestions
+    cowsay gemini-cli gh go googleworkspace-cli
+    steipete/tap/gogcli nmap ollama openai-whisper
+    poppler pymupdf so supabase/tap/supabase tldr
+    todoist-cli typescript-language-server uv whisper-cpp x-cli
 )
 
 CASKS=(
     visual-studio-code google-chrome microsoft-edge
-    beeper maccy bitwarden spotify notion claude
-    dropbox zoom slack microsoft-teams vlc
-    claude-code jetbrains-toolbox
-    onedrive iterm2
+    alt-tab beeper beeper-desktop-cli bitwarden claude
+    claude-code copilot-cli dropbox gcloud-cli iterm2
+    jetbrains-toolbox maccy microsoft-office notion notion-calendar
+    opal-app orbstack slack spotify superwhisper
+    tailscale-app telegram todoist-app vlc zoom
 )
 
 brew install "${FORMULAE[@]}"
@@ -46,6 +51,26 @@ chmod 700 "$HOME/.ssh"
 ln -sfn "$SCRIPT_DIR/.ssh/config" "$HOME/.ssh/config"
 chmod 600 "$SCRIPT_DIR/.ssh/config" 2>/dev/null || true
 
+# Symlink app configs.
+mkdir -p "$HOME/.config/gh" "$HOME/.config/todoist"
+ln -sfn "$REPO_DIR/gh/config.yml" "$HOME/.config/gh/config.yml"
+ln -sfn "$REPO_DIR/gh/hosts.yml" "$HOME/.config/gh/hosts.yml"
+
+mkdir -p "$HOME/Library/Application Support/io.Sam-Tay.so"
+[ -f "$REPO_DIR/so_config.yml" ] && ln -sfn "$REPO_DIR/so_config.yml" "$HOME/Library/Application Support/io.Sam-Tay.so/config.yml"
+[ -f "$REPO_DIR/xrc" ] && ln -sfn "$REPO_DIR/xrc" "$HOME/.xrc"
+[ -f "$REPO_DIR/todoist_config.json" ] && ln -sfn "$REPO_DIR/todoist_config.json" "$HOME/.config/todoist/config.json"
+
+# VS Code settings and extensions.
+mkdir -p "$HOME/Library/Application Support/Code/User"
+ln -sfn "$REPO_DIR/vscode/settings.json" "$HOME/Library/Application Support/Code/User/settings.json"
+ln -sfn "$REPO_DIR/vscode/keybindings.json" "$HOME/Library/Application Support/Code/User/keybindings.json"
+if command -v code >/dev/null 2>&1; then
+    xargs -n1 code --install-extension < "$REPO_DIR/vscode/extensions.txt"
+else
+    echo "==> VS Code CLI not found; skipping extension install"
+fi
+
 # Claude Code config (CLAUDE.md + statusline + settings.json merge)
 if [ -x "$REPO_DIR/ai/install.sh" ]; then
     bash "$REPO_DIR/ai/install.sh"
@@ -57,6 +82,5 @@ mkdir -p ~/bin
 curl -L https://iterm2.com/utilities/imgcat -o ~/bin/imgcat && chmod +x ~/bin/imgcat
 curl -L https://iterm2.com/utilities/it2copy -o ~/bin/it2copy && chmod +x ~/bin/it2copy
 
-# iTerm2 preferences
-defaults write com.googlecode.iterm2 "OptionKey" -int 1
-defaults write com.googlecode.iterm2 "Unlimited Scrollback" -bool true
+# iTerm2 preferences (restore from exported plist)
+plutil -convert binary1 -o "$HOME/Library/Preferences/com.googlecode.iterm2.plist" "$REPO_DIR/iterm2.plist"

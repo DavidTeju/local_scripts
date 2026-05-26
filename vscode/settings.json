@@ -1,0 +1,97 @@
+{
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "files.autoSave": "afterDelay",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+  },
+  "editor.formatOnSave": true,
+  "notebook.formatOnSave.enabled": true,
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "security.workspace.trust.untrustedFiles": "open",
+  "git.autofetch": true,
+  "terminal.integrated.inheritEnv": false,
+  "workbench.editorAssociations": {
+    "*.copilotmd": "vscode.markdown.preview.editor",
+    "*.pdf": "latex-workshop-pdf-hook",
+    "*.env": "env",
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "diffEditor.ignoreTrimWhitespace": true,
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features",
+  },
+  "svelte.enable-ts-plugin": true,
+  "files.associations": {
+    ".env*": "dotenv",
+  },
+  "editor.tokenColorCustomizations": {
+    "[*Light*]": {
+      "textMateRules": [
+        {
+          "scope": "ref.matchtext",
+          "settings": {
+            "foreground": "#000",
+          },
+        },
+      ],
+    },
+    "[*Dark*]": {
+      "textMateRules": [
+        {
+          "scope": "ref.matchtext",
+          "settings": {
+            "foreground": "#fff",
+          },
+        },
+      ],
+    },
+    "textMateRules": [],
+  },
+  "dotenv.enableAutocloaking": false,
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[dockercompose]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-docker",
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.autopep8",
+  },
+  "workbench.colorTheme": "GitHub Dark Dimmed",
+  "workbench.iconTheme": "material-icon-theme",
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": false,
+    "scminput": false,
+    "python": true,
+  },
+  "githubPullRequests.pullBranch": "never",
+  "github.copilot.nextEditSuggestions.enabled": true,
+  "workbench.startupEditor": "none",
+  "claudeCode.preferredLocation": "panel",
+  "[svelte]": {
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
+  },
+  "editor.linkedEditing": true,
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "workbench.editor.empty.hint": "hidden",
+  "python.analysis.typeCheckingMode": "standard",
+  "terminal.integrated.initialHint": false,
+  "claudeCode.selectedModel": "opus[1m]",
+  "claudeCode.allowDangerouslySkipPermissions": true,
+  "[nunjucks]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+}
