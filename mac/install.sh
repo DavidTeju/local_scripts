@@ -18,15 +18,15 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
 fi
 
 TAPS=(
-    beeper/tap hostinger/tap steipete/tap supabase/tap
+    beeper/tap hostinger/tap openclaw/tap supabase/tap
 )
 
 FORMULAE=(
     git python node tree jq
     zsh-syntax-highlighting zsh-autosuggestions
-    bitwarden-cli bun cowsay dnscrypt-proxy dnsmasq duti exiftool
+    bitwarden-cli bun cowsay exiftool
     gh go googleworkspace-cli hostinger/tap/hostinger
-    steipete/tap/gogcli minikube nmap ollama openai-whisper
+    openclaw/tap/gogcli nmap ollama openai-whisper
     poppler pymupdf pyright rclone so spotify_player
     supabase/tap/supabase tldr todoist-cli
     typescript-language-server uv whisper-cpp x-cli
@@ -34,16 +34,20 @@ FORMULAE=(
 
 CASKS=(
     visual-studio-code google-chrome microsoft-edge
-    alt-tab antigravity-cli beeper beeper-desktop-cli bitwarden
+    alt-tab beeper beeper-desktop-cli bitwarden
     claude claude-code@latest codex cold-turkey-blocker copilot-cli
-    cursor discord dropbox gcloud-cli github-copilot-app iterm2
-    jetbrains-toolbox libreoffice maccy microsoft-office mitmproxy
-    notion notion-calendar obsidian opal-app orbstack photosweeper-x
-    protonvpn qbittorrent slack spokenly spotify
+    discord dropbox gcloud-cli github-copilot-app iterm2
+    jetbrains-toolbox maccy microsoft-office mitmproxy
+    notion notion-calendar obsidian opal-app orbstack
+    qbittorrent slack spokenly spotify
     tailscale-app telegram todoist-app vlc windows-app zoom
 )
 
-for tap in "${TAPS[@]}"; do brew tap "$tap"; done
+for tap in "${TAPS[@]}"; do
+    brew tap "$tap"
+    # Homebrew refuses to load casks/formulae from untrusted third-party taps.
+    brew trust --tap "$tap"
+done
 brew install "${FORMULAE[@]}"
 brew install --cask "${CASKS[@]}"
 
@@ -106,8 +110,6 @@ curl -L https://iterm2.com/shell_integration/zsh -o ~/.iterm2_shell_integration.
 mkdir -p ~/bin
 # macOS markdown opener used by Open With / app bundle wrappers.
 ln -sfn "$REPO_DIR/obsidian-opener.sh" "$HOME/bin/obsidian-opener"
-# Captive-portal DNS escape hatch (needed because dnsmasq runs with no-resolv).
-ln -sfn "$REPO_DIR/portal-login" "$HOME/bin/portal-login"
 
 curl -L https://iterm2.com/utilities/imgcat -o ~/bin/imgcat && chmod +x ~/bin/imgcat
 curl -L https://iterm2.com/utilities/it2copy -o ~/bin/it2copy && chmod +x ~/bin/it2copy
