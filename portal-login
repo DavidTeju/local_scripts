@@ -1,0 +1,230 @@
+#!/bin/bash
+# portal-login — temporarily use the network's own DNS so a captive portal
+# login page can load, then restore the exact previous DNS configuration.
+#
+# Why this is needed: dnsmasq runs with `no-resolv` and forwards only to
+# dnscrypt-proxy, which cannot reach its upstream resolvers until the portal
+# lets you through. That deadlock means the portal's own hostname never
+# resolves. This borrows the network's DNS just long enough to log in.
+#
+# Design notes (each of these came from a real failure mode):
+#   - Resolves the ACTIVE service from the default route. Hardcoding "Wi-Fi"
+#     silently targets the wrong interface when docked on Ethernet.
+#   - SNAPSHOTS the current DNS config and restores exactly that, rather than
+#     assuming it was 127.0.0.1.
+#   - Restore is verified; the "done" flag is only set after the verification
+#     passes, so a failed restore can still be retried by the EXIT trap.
+#   - Traps HUP too: closing the terminal window would otherwise skip restore
+#     and silently leave DNS unfiltered.
+#   - Validates that the candidate DNS server actually answers before
+#     committing to it.
+
+set -uo pipefail
+
+TIMEOUT="${PORTAL_TIMEOUT:-300}"
+LOCKFILE="/tmp/.portal-login.lock"
+
+if ! mkdir "$LOCKFILE" 2>/dev/null; then
+    echo "Another portal-login appears to be running (lock: $LOCKFILE)."
+    echo "If that's wrong, remove it:  rmdir $LOCKFILE"
+    exit 1
+fi
+trap 'rmdir "$LOCKFILE" 2>/dev/null' EXIT
+
+# ---------- resolve active service ----------
+if [ -n "${PORTAL_SERVICE:-}" ]; then
+    SERVICE="$PORTAL_SERVICE"
+    iface=$(networksetup -listnetworkserviceorder 2>/dev/null \
+            | awk -v s="$SERVICE" '$0 ~ ("^\\([0-9]+\\) " s "$") {getline; if (match($0, /Device: [^)]+/)) print substr($0, RSTART+8, RLENGTH-8); exit}')
+else
+    iface=$(route -n get default 2>/dev/null | awk '/interface:/{print $2; exit}')
+    if [ -z "${iface:-}" ]; then
+        echo "No default route — are you associated to the network yet?"
+        exit 1
+    fi
+    SERVICE=$(networksetup -listnetworkserviceorder 2>/dev/null \
+              | awk -v d="$iface" '
+                  /^\([0-9]+\)/ { name=$0; sub(/^\([0-9]+\) /,"",name) }
+                  $0 ~ ("Device: " d "\\)") { print name; exit }')
+fi
+
+if [ -z "${SERVICE:-}" ] || [ -z "${iface:-}" ]; then
+    echo "Could not map the active interface to a network service."
+    echo "Override with:  PORTAL_SERVICE='Wi-Fi' portal-login"
+    exit 1
+fi
+
+# ---------- snapshot current DNS ----------
+snapshot_raw=$(networksetup -getdnsservers "$SERVICE" 2>&1)
+if [[ "$snapshot_raw" == *"aren't any DNS Servers"* ]]; then
+    ORIGINAL_DNS=("Empty")
+    original_desc="automatic (DHCP)"
+else
+    # shellcheck disable=SC2206
+    ORIGINAL_DNS=($snapshot_raw)
+    original_desc="${ORIGINAL_DNS[*]}"
+fi
+
+# ---------- snapshot current IPv6 ----------
+# Captive portal pages commonly pull assets from CDNs (CloudFront, Fastly)
+# whose IPv6 addresses have no PTR records. macOS's Screen Time web filter
+# (webfilterproxyd) reverse-resolves each destination to classify it; with no
+# PTR it builds an unbracketed URL like "https://2600:9000:..." which parses
+# as nil, and the connection is dropped. The portal page then hangs forever
+# on "please wait...". Forcing IPv4 for the session sidesteps it entirely.
+ORIGINAL_V6=$(networksetup -getinfo "$SERVICE" 2>/dev/null | awk -F': ' '/^IPv6:/{print $2; exit}')
+ORIGINAL_V6="${ORIGINAL_V6:-Automatic}"
+
+restored=0
+restore_attempts=0
+restore() {
+    [ "$restored" -eq 1 ] && return
+    restore_attempts=$((restore_attempts + 1))
+    [ "$restore_attempts" -gt 3 ] && return
+
+    echo ""
+    echo "==> Restoring DNS on '$SERVICE' to: $original_desc"
+    networksetup -setdnsservers "$SERVICE" "${ORIGINAL_DNS[@]}" 2>/dev/null
+    dscacheutil -flushcache 2>/dev/null
+
+    if [ "$ORIGINAL_V6" = "Automatic" ]; then
+        echo "==> Restoring IPv6 to Automatic"
+        networksetup -setv6automatic "$SERVICE" 2>/dev/null
+    fi
+
+    local now
+    now=$(networksetup -getdnsservers "$SERVICE" 2>&1 | tr '\n' ' ')
+    if [ "${ORIGINAL_DNS[0]}" = "Empty" ]; then
+        [[ "$now" == *"aren't any DNS Servers"* ]] && restored=1
+    else
+        [[ "$now" == *"${ORIGINAL_DNS[0]}"* ]] && restored=1
+    fi
+
+    if [ "$restored" -eq 1 ]; then
+        echo "==> Restored and verified. Filtering is active again."
+    else
+        echo "!!! RESTORE FAILED (attempt $restore_attempts). DNS now: $now"
+        echo "!!! Fix manually:  networksetup -setdnsservers '$SERVICE' ${ORIGINAL_DNS[*]}"
+        echo "!!!                networksetup -setv6automatic '$SERVICE'"
+    fi
+}
+
+cleanup_all() { restore; rmdir "$LOCKFILE" 2>/dev/null; }
+trap cleanup_all EXIT
+trap 'cleanup_all; exit 130' INT
+trap 'cleanup_all; exit 143' TERM
+trap 'cleanup_all; exit 129' HUP
+
+# ---------- discover the network's DNS ----------
+# bash 3.2 on macOS has no `mapfile`, so build arrays with a read loop.
+dns_list=()
+while IFS= read -r line; do
+    [ -n "$line" ] && dns_list+=("$line")
+done < <(ipconfig getpacket "$iface" 2>/dev/null \
+    | awk -F'[{}]' '/domain_name_server/{print $2}' \
+    | tr ',' '\n' | tr -d ' ' | grep -E '^[0-9]+\.')
+
+if [ "${#dns_list[@]}" -eq 0 ]; then
+    while IFS= read -r line; do
+        [ -n "$line" ] && dns_list+=("$line")
+    done < <(ipconfig getpacket "$iface" 2>/dev/null \
+        | awk -F'[{}]' '/^router/{print $2}' \
+        | tr ',' '\n' | tr -d ' ' | grep -E '^[0-9]+\.')
+    [ "${#dns_list[@]}" -gt 0 ] && echo "(no DHCP DNS offered — falling back to the router)"
+fi
+
+if [ "${#dns_list[@]}" -eq 0 ]; then
+    echo "No usable DNS server found via DHCP on $iface."
+    exit 1
+fi
+
+# Validate at least one candidate actually answers on port 53.
+working=()
+for s in ${dns_list[@]+"${dns_list[@]}"}; do
+    if dig +time=3 +tries=1 +short captive.apple.com "@$s" >/dev/null 2>&1; then
+        working+=("$s")
+    fi
+done
+if [ "${#working[@]}" -eq 0 ]; then
+    echo "Candidate DNS servers (${dns_list[*]}) did not answer a test query."
+    echo "Continuing anyway — captive portals often only answer after you attach."
+    working=(${dns_list[@]+"${dns_list[@]}"})
+fi
+
+if [ "$TIMEOUT" -ge 60 ]; then
+    human_timeout="$((TIMEOUT / 60)) minutes"
+else
+    human_timeout="${TIMEOUT} seconds"
+fi
+
+echo "Interface     : $iface ($SERVICE)"
+echo "Was set to    : $original_desc"
+echo "Network DNS   : ${working[*]}"
+echo ""
+echo "WARNING: while portal mode is active your DNS is UNFILTERED and unencrypted."
+echo "It reverts automatically in $human_timeout."
+echo ""
+
+if ! networksetup -setdnsservers "$SERVICE" "${working[@]}"; then
+    echo "Failed to set DNS — aborting."
+    exit 1
+fi
+dscacheutil -flushcache 2>/dev/null
+
+# Force IPv4 for the session so the Screen Time filter can classify the
+# portal's CDN assets (see the IPv6/PTR note above).
+if [ "$ORIGINAL_V6" = "Automatic" ]; then
+    echo "==> Disabling IPv6 for this session (was: $ORIGINAL_V6)"
+    networksetup -setv6off "$SERVICE" 2>/dev/null
+fi
+
+now=$(networksetup -getdnsservers "$SERVICE" 2>&1 | tr '\n' ' ')
+if [[ "$now" != *"${working[0]}"* ]]; then
+    echo "DNS change did not take effect (still: $now) — aborting."
+    exit 1
+fi
+
+echo "==> Portal mode ON."
+echo ""
+echo "   1. Open  http://captive.apple.com  (plain HTTP — never https)"
+echo "   2. Complete the portal login"
+echo ""
+echo "Watching for connectivity — DNS is restored the moment login succeeds."
+echo "(Press Enter to restore immediately; hard limit $human_timeout.)"
+echo ""
+
+# Auto-restore on success rather than waiting out the full timer. This is the
+# pattern NextDNS and Tailscale both use: probe until connectivity returns,
+# then re-secure at once. Cuts the unfiltered window from "up to TIMEOUT" to
+# "a few seconds after you finish logging in".
+start_ts=$(date +%s)
+interactive=0
+[ -t 0 ] && interactive=1
+
+while :; do
+    now=$(date +%s)
+    if [ $((now - start_ts)) -ge "$TIMEOUT" ]; then
+        echo ""
+        echo "==> Hard timeout reached."
+        break
+    fi
+
+    if [ "$interactive" -eq 1 ]; then
+        if read -r -t 5 _ 2>/dev/null; then
+            echo "==> Manual confirmation."
+            break
+        fi
+    else
+        sleep 5
+    fi
+
+    # --no-location: a redirect means we're still captive, so don't follow it.
+    probe=$(curl -s --max-time 3 --no-location \
+            http://captive.apple.com/hotspot-detect.html 2>/dev/null)
+    case "$probe" in
+        *Success*)
+            echo "==> Connectivity confirmed — portal cleared after $((now - start_ts))s."
+            break
+            ;;
+    esac
+done

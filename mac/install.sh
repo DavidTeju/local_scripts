@@ -17,26 +17,51 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
         sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 fi
 
+TAPS=(
+    beeper/tap hostinger/tap steipete/tap supabase/tap
+)
+
 FORMULAE=(
     git python node tree jq
     zsh-syntax-highlighting zsh-autosuggestions
-    cowsay gemini-cli gh go googleworkspace-cli
-    steipete/tap/gogcli nmap ollama openai-whisper
-    poppler pymupdf so supabase/tap/supabase tldr
-    todoist-cli typescript-language-server uv whisper-cpp x-cli
+    bitwarden-cli bun cowsay dnscrypt-proxy dnsmasq duti exiftool
+    gh go googleworkspace-cli hostinger/tap/hostinger
+    steipete/tap/gogcli minikube nmap ollama openai-whisper
+    poppler pymupdf pyright rclone so spotify_player
+    supabase/tap/supabase tldr todoist-cli
+    typescript-language-server uv whisper-cpp x-cli
 )
 
 CASKS=(
     visual-studio-code google-chrome microsoft-edge
-    alt-tab beeper beeper-desktop-cli bitwarden claude
-    claude-code copilot-cli dropbox gcloud-cli iterm2
-    jetbrains-toolbox maccy microsoft-office notion notion-calendar
-    opal-app orbstack slack spotify superwhisper
-    tailscale-app telegram todoist-app vlc zoom
+    alt-tab antigravity-cli beeper beeper-desktop-cli bitwarden
+    claude claude-code@latest codex cold-turkey-blocker copilot-cli
+    cursor discord dropbox gcloud-cli github-copilot-app iterm2
+    jetbrains-toolbox libreoffice maccy microsoft-office mitmproxy
+    notion notion-calendar obsidian opal-app orbstack photosweeper-x
+    protonvpn qbittorrent slack spokenly spotify
+    tailscale-app telegram todoist-app vlc windows-app zoom
 )
 
+for tap in "${TAPS[@]}"; do brew tap "$tap"; done
 brew install "${FORMULAE[@]}"
 brew install --cask "${CASKS[@]}"
+
+# Global CLIs that don't come from Homebrew.
+NPM_GLOBALS=(
+    @playwright/cli playwright betahi-copilot-bridge continues
+)
+if command -v npm >/dev/null 2>&1; then
+    npm install -g "${NPM_GLOBALS[@]}"
+fi
+
+if command -v bun >/dev/null 2>&1; then
+    bun install -g @stephendolan/ynab-cli
+fi
+
+if command -v uv >/dev/null 2>&1; then
+    uv tool install it2
+fi
 
 # Symlink dotfiles. Shared files live at the repo root or under lib/.
 ln -sfn "$SCRIPT_DIR/zprofile.zsh"     "$HOME/.zprofile"
@@ -81,6 +106,8 @@ curl -L https://iterm2.com/shell_integration/zsh -o ~/.iterm2_shell_integration.
 mkdir -p ~/bin
 # macOS markdown opener used by Open With / app bundle wrappers.
 ln -sfn "$REPO_DIR/obsidian-opener.sh" "$HOME/bin/obsidian-opener"
+# Captive-portal DNS escape hatch (needed because dnsmasq runs with no-resolv).
+ln -sfn "$REPO_DIR/portal-login" "$HOME/bin/portal-login"
 
 curl -L https://iterm2.com/utilities/imgcat -o ~/bin/imgcat && chmod +x ~/bin/imgcat
 curl -L https://iterm2.com/utilities/it2copy -o ~/bin/it2copy && chmod +x ~/bin/it2copy
