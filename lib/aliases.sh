@@ -62,7 +62,7 @@ if command -v apt-get >/dev/null 2>&1; then
 fi
 
 # Projects
-alias assistant='cd ~/projects/personal_assistant_claude && claude'
+alias assistant='cd ~/projects/personal_assistant_claude && copilot --allow-all'
 
 # Beeper (wrapper with contact enrichment)
 alias beeper='~/projects/personal_assistant_claude/scripts/beeper'
