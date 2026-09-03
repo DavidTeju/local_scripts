@@ -10,3 +10,5 @@ xrc
 todoist_config.json
 # Runtime state written by backup-ai-sessions.sh and its shell trigger
 logs/
+# Symlink created by mac/install.sh and linux/install.sh into the tracked platform copy
+.ssh/config
