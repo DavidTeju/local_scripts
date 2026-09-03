@@ -45,3 +45,7 @@ if [ -f "$REPO_DIR/.env" ]; then
     . "$REPO_DIR/.env"
     set +a
 fi
+
+# Bun — global package binaries (e.g. ynab-cli)
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
