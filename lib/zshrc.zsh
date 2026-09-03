@@ -34,6 +34,9 @@ test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell
 # Shared `what` command inspector
 [ -r "$LIB_DIR/what.zsh" ] && source "$LIB_DIR/what.zsh"
 
+# copilot-bridge — Copilot subscription as OpenAI/Anthropic endpoint (Codex + Claude Code)
+[ -r "$LIB_DIR/copilot-bridge.sh" ] && source "$LIB_DIR/copilot-bridge.sh"
+
 # Shared aliases — sourced here (not just from .zprofile) so they load
 # for non-login interactive shells too (common on Linux terminals).
 [ -r "$LIB_DIR/aliases.sh" ] && source "$LIB_DIR/aliases.sh"
