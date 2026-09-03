@@ -8,3 +8,5 @@ github_deploy*
 so_config.yml
 xrc
 todoist_config.json
+# Runtime state written by backup-ai-sessions.sh and its shell trigger
+logs/

@@ -72,3 +72,26 @@ alias python='python3'
 
 # Deploy
 alias deploy-handwriting="ssh root@betterletters.app 'cd /root/handwriting-teacher && git pull && docker build -t handwriting-teacher . && docker stop handwriting-teacher && docker rm handwriting-teacher && docker run -d --name handwriting-teacher --restart unless-stopped -p 127.0.0.1:5123:5123 --env-file /root/handwriting-teacher/.env handwriting-teacher'"
+
+# AI-session backup -> Dropbox.
+# Runs at most once/day, detached, from the terminal's already-permitted
+# context (macOS blocks background launchd jobs from the CloudStorage/Dropbox
+# folder, but an interactive shell can write there and Dropbox auto-syncs).
+# Skip-path uses only builtins (no subprocess forks) so startup cost is ~nil.
+[ -n "$ZSH_VERSION" ] && zmodload zsh/datetime 2>/dev/null   # enables $EPOCHSECONDS
+_ai_session_backup_daily() {
+  case $- in *i*) ;; *) return ;; esac   # interactive shells only
+  local stamp="$HOME/scripts/logs/.ai-session-backup.lastrun"
+  local script="$HOME/scripts/backup-ai-sessions.sh"
+  [ -x "$script" ] || return
+  local now last
+  now=${EPOCHSECONDS:-$(date +%s)}
+  last=0; read -r last < "$stamp" 2>/dev/null
+  case $last in ''|*[!0-9]*) last=0 ;; esac
+  if [ $(( now - last )) -ge 72000 ]; then          # 20h
+    mkdir -p "$HOME/scripts/logs" 2>/dev/null
+    echo "$now" > "$stamp"
+    ( nohup "$script" >/dev/null 2>&1 & ) 2>/dev/null
+  fi
+}
+_ai_session_backup_daily
